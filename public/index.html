@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Carpool / Ride Share Board</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 30px auto; padding: 0 15px; background: #f4f6f8; }
+  h1 { text-align: center; color: #2c3e50; }
+  form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 25px; }
+  input { width: 100%; padding: 8px; margin: 6px 0 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+  button { background: #2c7be5; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; width: 100%; }
+  button:hover { background: #1a5fc4; }
+  .ride-card { background: white; padding: 14px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .ride-card b { color: #2c7be5; }
+</style>
+</head>
+<body>
+
+<h1>🚗 Carpool / Ride Share Board</h1>
+
+<form id="rideForm">
+  <label>From</label>
+  <input type="text" id="from" required>
+
+  <label>To</label>
+  <input type="text" id="to" required>
+
+  <label>Date</label>
+  <input type="date" id="date" required>
+
+  <label>Seats Available</label>
+  <input type="number" id="seats" min="1" required>
+
+  <label>Contact Number</label>
+  <input type="text" id="contact" required>
+
+  <button type="submit">Post Ride</button>
+</form>
+
+<h2>Available Rides</h2>
+<div id="ridesList"></div>
+
+<script>
+  const form = document.getElementById('rideForm');
+  const ridesList = document.getElementById('ridesList');
+
+  async function loadRides() {
+    const res = await fetch('/api/rides');
+    const rides = await res.json();
+    ridesList.innerHTML = '';
+    rides.slice().reverse().forEach(ride => {
+      const div = document.createElement('div');
+      div.className = 'ride-card';
+      div.innerHTML = `<b>${ride.from} → ${ride.to}</b><br>
+        Date: ${ride.date} | Seats: ${ride.seats}<br>
+        Contact: ${ride.contact}`;
+      ridesList.appendChild(div);
+    });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+      from: document.getElementById('from').value,
+      to: document.getElementById('to').value,
+      date: document.getElementById('date').value,
+      seats: document.getElementById('seats').value,
+      contact: document.getElementById('contact').value
+    };
+    await fetch('/api/rides', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    form.reset();
+    loadRides();
+  });
+
+  loadRides();
+</script>
+
+</body>
+</html>
